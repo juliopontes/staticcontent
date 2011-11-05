@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="1.7" method="upgrade">
+	<name>com_staticcontent</name>
+	<author>Julio Pontes</author>
+	<creationDate>April 2006</creationDate>
+	<copyright>(C) 2005 - 2011 Open Source Matters. All rights reserved.
+	</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail>juliopfneto@gmail.com</authorEmail>
+	<authorUrl></authorUrl>
+	<version>1.7.0</version>
+	<description>COM_STATICCONTENT_XML_DESCRIPTION</description>
+	<administration>
+		<menu link="option=com_staticcontent" img="class:staticcontent">Static Content</menu>
+		<files folder="admin">
+			<filename>config.xml</filename>
+			<filename>controller.php</filename>
+			<filename>index.html</filename>
+			<filename>staticcontent.php</filename>
+			<folder>controllers</folder>
+			<folder>views</folder>
+		</files>
+		<languages folder="admin">
+			<language tag="en-GB">language/en-GB.com_staticcontent.ini</language>
+			<language tag="en-GB">language/en-GB.com_staticcontent.sys.ini</language>
+		</languages>
+	</administration>
+</extension>

@@ -1,0 +1,1 @@
+<p><?php echo JText::_('COM_STATICCONTENT_HTML_CONFIG_DIRECTORY'); ?></p>
