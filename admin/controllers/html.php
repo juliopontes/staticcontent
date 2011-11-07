@@ -12,6 +12,15 @@ class StaticContentControllerHTML extends JController
 	 */
 	protected $default_view = 'staticcontent';
 	
+	public function delete()
+	{
+		$params = JComponentHelper::getParams('com_staticcontent');
+		$this->base_directory = JPath::clean($params->get('base_directory'));
+		JFolder::delete($this->base_directory);
+		JFolder::create($this->base_directory);
+		JFactory::getApplication()->redirect('index.php?option=com_staticcontent&view=staticcontent',JText::_('COM_STATICCONTENT_HTML_DELETED'));
+	}
+	
 	public function download()
 	{
 		$params = JComponentHelper::getParams('com_staticcontent');
@@ -64,18 +73,28 @@ class StaticContentControllerHTML extends JController
 		$params = JComponentHelper::getParams('com_staticcontent');
 		$this->base_directory = JPath::clean($params->get('base_directory'));
 		
+		require_once JPATH_COMPONENT.DS.'helpers'.DS.'menu.php';
+		
 		foreach ($items as $item) {
-			//not copy external links
-			if (!JURI::isInternal($item->link)) continue;
 			
+			//not copy external links
+			if (!JURI::isInternal($item->link) || $item->access != 1) continue;
+			
+			ComStaticContentHelperMenu::getLink($item);
+			
+			if (!isset($item->flink)) continue;
+			
+			$uri = JURI::getInstance($item->flink);
 			$url = JURI::root();
-			$url .= $item->link.'&Itemid='.$item->id;
+			$url .= 'index.php?'.$uri->getQuery();
+			
+			if ($uri->getVar('option') == 'com_user' && $uri->getVar('view') == 'profile') continue;
 			
 			$file_source = (!$item->home) ? $item->alias.'.html' : 'index.html' ;
 			$path_source = $this->base_directory.DS;
 			
 			$body = file_get_contents($url);
-			
+			if (empty($body)) continue;
 			$domDocument = new DOMDocument();
 			$domDocument->loadHTML($body);
 			$links = $domDocument->getElementsByTagName('link');
