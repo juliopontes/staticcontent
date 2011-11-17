@@ -34,10 +34,12 @@ class StaticContentViewStaticContent extends JView
 		JToolBarHelper::title('Static Content');
 		
 		if (!empty($this->base_directory)) {
-			JToolBarHelper::custom('html.generate','refresh','refresh','create html',false);
+			JToolBarHelper::custom('html.generate','refresh','refresh','COM_STATICCONTENT_TOOLBAR_CREATE',false);
 			
-			if(!empty($this->items))
-				JToolBarHelper::custom('html.download','archive','archive','download', false);
+			if(!empty($this->items)) {
+				JToolBarHelper::custom('html.delete','delete','delete','COM_STATICCONTENT_TOOLBAR_DELETE', false);
+				JToolBarHelper::custom('html.download','archive','archive','COM_STATICCONTENT_TOOLBAR_DOWNLOAD', false);
+			}
 		}
 		
 		JToolBarHelper::preferences('com_staticcontent');

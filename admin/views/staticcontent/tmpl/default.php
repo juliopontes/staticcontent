@@ -2,14 +2,14 @@
 <table class="adminlist">
 <thead>
 	<tr>
-		<th><?php echo JText::_('HTML Files'); ?></th>
+		<th><?php echo JText::_('COM_STATICCONTENT_HTML_TITLE_HTML_FILES'); ?></th>
 	</tr>
 </thead>
 <tbody>
 	<?php if (empty($this->items)): ?>
 		<tr class="">
 			<td class="center">
-				<p><?php echo JText::_('COM_STATICCONTENT_HTML_GENERATE_MESSAGE'); ?></p>
+				<p><?php echo JText::_('COM_STATICCONTENT_HTML_GENERATE_HTML_MESSAGE'); ?></p>
 			</td>
 		</td>	
 	<?php else: ?>
