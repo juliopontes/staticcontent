@@ -9,7 +9,7 @@
 	<authorEmail>juliopfneto@gmail.com</authorEmail>
 	<authorUrl></authorUrl>
 	<version>1.7.0</version>
-	<description>COM_STATICCONTENT_XML_DESCRIPTION</description>
+	<description>create static version of your site</description>
 	<administration>
 		<menu link="option=com_staticcontent" img="class:staticcontent">Static Content</menu>
 		<files folder="admin">
@@ -19,6 +19,7 @@
 			<filename>staticcontent.php</filename>
 			<folder>controllers</folder>
 			<folder>views</folder>
+			<folder>helpers</folder>
 		</files>
 		<languages folder="admin">
 			<language tag="en-GB">language/en-GB.com_staticcontent.ini</language>
