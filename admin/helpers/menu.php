@@ -38,6 +38,8 @@ class ComStaticContentHelperMenu
 				break;
 		}
 		
+		if (!isset($item->flink)) return;
+		
 		if (strcasecmp(substr($item->flink, 0, 4), 'http') && (strpos($item->flink, 'index.php?') !== false)) {
 			$item->flink = JRoute::_($item->flink, true, $item->params->get('secure'));
 		}

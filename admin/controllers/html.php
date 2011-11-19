@@ -67,8 +67,11 @@ class StaticContentControllerHTML extends JController
 	
 	public function generate()
 	{
+		ini_set('max_execution_time','0');
+		$guest = JFactory::getUser(0);
 		$site = JApplication::getInstance('site');
 		$items = $site->getMenu()->getMenu();
+		$config = new JConfig();
 		$countFiles = 0;
 		
 		$params = JComponentHelper::getParams('com_staticcontent');
@@ -78,12 +81,15 @@ class StaticContentControllerHTML extends JController
 		
 		foreach ($items as $item) {
 			
-			//not copy external links
-			if (!JURI::isInternal($item->link) || $item->access != 1) continue;
+			$canAccessMenu = $this->checkMenuAccess($guest,$item->id);
+			//not copy external links and check if guest user has access
+			if (!JURI::isInternal($item->link) || !$canAccessMenu) continue;
 			
 			ComStaticContentHelperMenu::getLink($item);
 			
-			if (!isset($item->flink)) continue;
+			if (!isset($item->flink)) {
+				continue;
+			}
 			
 			$uri = JURI::getInstance($item->flink);
 			$url = JURI::root();
@@ -99,6 +105,7 @@ class StaticContentControllerHTML extends JController
 			if (empty($body)) continue;
 			$domDocument = new DOMDocument();
 			$domDocument->loadHTML($body);
+			
 			$links = $domDocument->getElementsByTagName('link');
 			$scripts = $domDocument->getElementsByTagName('script');
 			$images = $domDocument->getElementsByTagName('img');
@@ -109,6 +116,11 @@ class StaticContentControllerHTML extends JController
 			$body = str_replace($uri->root(),'',$body);
 			$body = str_replace($basePath,'',$body);
 			
+			$body = $this->fixMenuLinks($body);
+			
+			foreach ($links as $link) {
+				$this->copyFile($link, 'href');
+			}
 			foreach ($images as $img) {
 				$this->copyFile($img, 'src');
 			}
@@ -119,16 +131,29 @@ class StaticContentControllerHTML extends JController
 				$this->copyFile($link, 'href');
 			}
 			
-			//$body = $this->fixLinks($body,$items);
-			
 			$pathFileSource = $path_source.$file_source;
+			//creating folders
+			JFolder::create(dirname($pathFileSource));
 			if (JFile::write($pathFileSource, $body)) $countFiles++;
 		}
 		
 		JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_STATICCONTENT_HTML_GENERATE_HTML',$countFiles));
-		$this->display();
+		$this->setRedirect('index.php?option=com_staticcontent');
+		$this->redirect();
 	}
 	
+	private function checkMenuAccess($user,$mid)
+	{
+		$site = JApplication::getInstance('site');
+		$menu = $site->getMenu()->getItem($mid);
+		
+		if ($menu) {
+			return in_array((int) $menu->access, $user->getAuthorisedViewLevels());
+		}
+		else {
+			return true;
+		}
+	}
 
 	public static function _($url, $xhtml = true, $ssl = null)
 	{
@@ -187,34 +212,62 @@ class StaticContentControllerHTML extends JController
 		return $url;
 	}
 	
-	private function fixLinks($body,$items)
+	private function fixMenuLinks($body)
 	{
-		foreach ($items as $item) {
-			
-			//not copy external links
-			if (!JURI::isInternal($item->link) || $item->access != 1) continue;
-			
-			ComStaticContentHelperMenu::getLink($item);
-			if (!isset($item->flink)) continue;
-			$item->flink = str_replace('administrator/','',$item->flink);
-			
-			if (!isset($item->flink)) continue;
-			
-			$url = self::_($item->flink);
-			
-			$base = JUri::root();
-			
-			$url = str_replace($base.'/','',$url);
-			
-			$body = $this->fixLink($url, $item->alias, $body);
+		$db = JFactory::getDbo();
+		$guest = JFactory::getUser(0);
+		$site = JApplication::getInstance('site');
+		$router = JSite::getRouter();
+		
+		$domDocument = new DOMDocument();
+		$domDocument->loadHTML($body);
+		$linksDomDocument = $domDocument->getElementsByTagName('a');
+		$links = array();
+		foreach ($linksDomDocument as $linkDomDocument) {
+			if ($linkDomDocument->hasAttribute('href')) {
+				$url = $linkDomDocument->getAttribute('href');
+				if (empty($url) || strpos($url,'index.php') === false) continue;
+				
+				$url = JURI::root().$url;
+				$base = JUri::root();
+				$clean_url = str_replace($base,'',$url);
+				
+				$uri	= new JUri($url);
+				$result = $router->parse($uri);
+				
+				if (strpos($clean_url,'index.php/component/')!== false) {
+					if (strpos($clean_url,'component/banners') !== false){
+						$id = end( explode('/',$url) );
+						
+						$db->setQuery('SELECT clickurl FROM #__banners WHERE id = '.$db->quote(intval($id)));
+						$key = $db->loadResult();
+						
+						$links[$key] = $clean_url;
+					}
+				}
+				else {
+					//menu item
+					$config = new JConfig();
+					if ($config->sef && !$config->sef_rewrite) {
+						$alias = str_replace('index.php/','',$clean_url);
+						$alias .= '.html';
+					}
+					else if($config->sef && $config->sef_rewrite) {
+						$alias = str_replace('index.php/','',$clean_url);
+						$alias .= '.html';
+					}
+					
+					if (isset($alias))
+						$links[$alias] = $clean_url;
+				}
+			}
 		}
 		
-		return $body;
-	}
-	
-	private function fixLink($url,$alias,$body)
-	{
-		$body = str_replace($url,$alias.'.html',$body);
+		if (!empty($links)) {
+			foreach ($links as $alias => $original) {
+				$body = str_replace('href="'.$original.'"','href="'.$alias.'"',$body);
+			}
+		}
 		
 		return $body;
 	}
@@ -237,7 +290,6 @@ class StaticContentControllerHTML extends JController
 			$intersect = array_intersect(explode(DS,JPATH_ROOT), explode('/',$uri->getPath()));
 			$path = str_replace(implode('/',$intersect).'/','',$uri->getPath());
 			
-			
 			$sourceFilePath = JPath::clean(JPATH_ROOT.$path);
 			$filePath = JPath::clean($path_source.$path);
 	
@@ -245,7 +297,48 @@ class StaticContentControllerHTML extends JController
 				//creating folders
 				JFolder::create(dirname($filePath));
 				//copy file
-				JFile::copy($sourceFilePath, $filePath);
+				if (JFile::copy($sourceFilePath, $filePath)) {
+					//copy all url(*) data
+					if (strtolower( JFile::getExt($sourceFilePath) ) == 'css') {
+						//$break = (JFile::getName($sourceFilePath) == 'personal.css');
+						$css_file_content = JFile::read($sourceFilePath);
+						preg_match_all('/(url|URL)\(.*?\)/i', $css_file_content, $data_array);
+						
+						if (!empty($data_array[0])) {
+							$baseSourceFilePath = dirname($sourceFilePath).DS;
+							$baseFilePath = dirname($filePath).DS;
+							foreach($data_array[0] as $img) {
+								$removeDirs = substr_count($img,'../');
+								$clean_path = str_replace('../','',$img);
+								$clean_path = str_replace('"','',$clean_path);
+								$clean_path = str_replace('(','',$clean_path);
+								$clean_path = str_replace(')','',$clean_path);
+								$clean_path = str_replace('url','',$clean_path);
+								$clean_path = str_replace('URL','',$clean_path);
+								
+								for ($d=1;$d<=$removeDirs;$d++) {
+									$sourceFilePath = dirname($baseSourceFilePath).DS;
+									$filePath = dirname($baseFilePath).DS;
+								}
+								$sourceFilePath = $sourceFilePath.$clean_path;
+								$filePath = $filePath.$clean_path;
+								$sourceFilePath = JPath::clean($sourceFilePath);
+								$filePath = JPath::clean($filePath);
+								
+								if (JFile::exists($sourceFilePath)) {
+									//creating folders
+									JFolder::create(dirname($filePath));
+									if (!JFile::copy($sourceFilePath, $filePath)) {
+										die($sourceFilePath);
+									}
+								}
+							}
+						}
+						else {
+							//echo JFile::getName($sourceFilePath);
+						}
+					}
+				}
 			}
 		}
 	}
