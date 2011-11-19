@@ -4,6 +4,9 @@ defined('_JEXEC') or die;
 
 jimport('joomla.application.component.controller');
 
+require_once JPATH_COMPONENT.DS.'helpers'.DS.'siterouter.php';
+require_once JPATH_COMPONENT.DS.'helpers'.DS.'menu.php';
+
 class StaticContentControllerHTML extends JController
 {
 	/**
@@ -70,17 +73,14 @@ class StaticContentControllerHTML extends JController
 		ini_set('max_execution_time','0');
 		$guest = JFactory::getUser(0);
 		$site = JApplication::getInstance('site');
-		$items = $site->getMenu()->getMenu();
+		$items = $site->getMenu()->getItems(null,array());
 		$config = new JConfig();
 		$countFiles = 0;
 		
 		$params = JComponentHelper::getParams('com_staticcontent');
 		$this->base_directory = JPath::clean($params->get('base_directory'));
-		
-		require_once JPATH_COMPONENT.DS.'helpers'.DS.'menu.php';
-		
+				
 		foreach ($items as $item) {
-			
 			$canAccessMenu = $this->checkMenuAccess($guest,$item->id);
 			//not copy external links and check if guest user has access
 			if (!JURI::isInternal($item->link) || !$canAccessMenu) continue;
@@ -159,7 +159,9 @@ class StaticContentControllerHTML extends JController
 	{
 		// Get the router.
 		$app	= JApplication::getInstance('site');
-		$router	= $app->getRouter();
+		$config = JFactory::getConfig();
+		$options = array('mode' => $config->get('sef'));
+		$router	= new ComStaticContentHelperSiteRouter($options);
 
 		// Make sure that we have our router
 		if (!$router) {
@@ -171,7 +173,7 @@ class StaticContentControllerHTML extends JController
 		}
 
 		// Build route.
-		$uri = $router->build($url);
+		$uri = $router->build($app,$url);
 		$url = $uri->toString(array('path', 'query', 'fragment'));
 
 		// Replace spaces.
@@ -217,7 +219,7 @@ class StaticContentControllerHTML extends JController
 		$db = JFactory::getDbo();
 		$guest = JFactory::getUser(0);
 		$site = JApplication::getInstance('site');
-		$router = JSite::getRouter();
+		$router = new ComStaticContentHelperSiteRouter();
 		
 		$domDocument = new DOMDocument();
 		$domDocument->loadHTML($body);
