@@ -137,6 +137,7 @@ class StaticContentControllerHTML extends JController
 			if (JFile::write($pathFileSource, $body)) $countFiles++;
 		}
 		
+		
 		JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_STATICCONTENT_HTML_GENERATE_HTML',$countFiles));
 		$this->setRedirect('index.php?option=com_staticcontent');
 		$this->redirect();
@@ -287,14 +288,14 @@ class StaticContentControllerHTML extends JController
 			$uriHost = $uri->getHost();
 			if (!empty($uriHost) && $uriHost == JURI::getInstance()->getHost()) $interno = true;
 			
-			if(JURI::isInternal($url) == $interno) return;
+			if(JURI::isInternal($url) == $interno || strpos($url,'index.php') !== false) return;
 			
 			$intersect = array_intersect(explode(DS,JPATH_ROOT), explode('/',$uri->getPath()));
 			$path = str_replace(implode('/',$intersect).'/','',$uri->getPath());
 			
-			$sourceFilePath = JPath::clean(JPATH_ROOT.$path);
-			$filePath = JPath::clean($path_source.$path);
-	
+			$sourceFilePath = JPath::clean(JPATH_ROOT.DS.$path);
+			$filePath = JPath::clean($path_source.DS.$path);
+			
 			if (JFile::exists($sourceFilePath)) {
 				//creating folders
 				JFolder::create(dirname($filePath));
