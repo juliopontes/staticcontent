@@ -79,7 +79,30 @@ class StaticContentControllerHTML extends JController
 		
 		$params = JComponentHelper::getParams('com_staticcontent');
 		$this->base_directory = JPath::clean($params->get('base_directory'));
-				
+
+		$coreFolders = array(
+				JPATH_ROOT.DS.'administrator',
+				JPATH_ROOT.DS.'components',
+				JPATH_ROOT.DS.'modules',
+				JPATH_ROOT.DS.'includes',
+				JPATH_ROOT.DS.'plugins',
+				JPATH_ROOT.DS.'templates',
+				JPATH_ROOT.DS.'images',
+				JPATH_ROOT.DS.'language',
+				JPATH_ROOT.DS.'libraries',
+				JPATH_ROOT.DS.'cache',
+				JPATH_ROOT.DS.'cli',
+				JPATH_ROOT.DS.'images');
+
+		if ($this->base_directory == $config->tmp_path || $this->base_directory == $config->log_path || in_array($this->base_directory,$coreFolders)) {
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_STATICCONTENT_HTML_CONFIG_PATH_IN_USE'));
+			$this->setRedirect('index.php?option=com_staticcontent');
+			$this->redirect();			
+		}
+
+		echo $this->base_directory;
+		exit;
+
 		foreach ($items as $item) {
 			$canAccessMenu = $this->checkMenuAccess($guest,$item->id);
 			//not copy external links and check if guest user has access
