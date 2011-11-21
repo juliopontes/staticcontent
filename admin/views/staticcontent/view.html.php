@@ -19,7 +19,11 @@ class StaticContentViewStaticContent extends JView
 				JFolder::create($this->base_directory);
 				JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_STATICCONTENT_HTML_CREATED_DIRECTORY_MESSAGE',$this->base_directory));
 			}
-			$this->items = JFolder::files($this->base_directory, '.html');
+			$this->items = JFolder::files($this->base_directory, '.html', true, true);
+			foreach ($this->items as &$item) {
+				$item = str_replace($this->base_directory.DS,'',$item);
+				$item = str_replace(DS,'/',$item);
+			}
 		}
 		else {
 			$this->_layout = 'preferences';

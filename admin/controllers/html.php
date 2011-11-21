@@ -121,22 +121,29 @@ class StaticContentControllerHTML extends JController
 			$file_source = (!$item->home) ? $item->alias.'.html' : 'index.html' ;
 			$path_source = $this->base_directory.DS;
 			
+			if ($item->parent_id > 1) {
+				$file_source = $this->getParentItems($item,$file_source);
+			}
+			
 			$body = file_get_contents($url);
 			if (empty($body)) continue;
 			$domDocument = new DOMDocument();
 			$domDocument->loadHTML($body);
 			
-
 			$links = $domDocument->getElementsByTagName('link');
 			$scripts = $domDocument->getElementsByTagName('script');
 			$images = $domDocument->getElementsByTagName('img');
 			
 			$intersect = array_intersect(explode(DS,JPATH_ROOT), explode('/',$uri->getPath()));
-			$basePath = implode('/',$intersect).'/';
+			$basePath = '/'.implode('/',$intersect).'/';
 			$basePath = JPath::clean($basePath);
-		
+			$basePath = str_replace(DS,'/',$basePath);
+
+			$itemLevel = ($item->level - 1);
+			$baseFolder = ($itemLevel <= 0) ? '' : str_repeat('../',$itemLevel) ;
+
 			$body = str_replace($uri->root(),'',$body);
-			$body = str_replace($basePath,'',$body);
+			$body = str_replace($basePath,$baseFolder,$body);
 			$body = $this->fixMenuLinks($body);
 			
 			foreach ($links as $link) {
@@ -151,6 +158,8 @@ class StaticContentControllerHTML extends JController
 			foreach ($links as $link) {
 				$this->copyFile($link, 'href');
 			}
+
+			
 			
 			$pathFileSource = $path_source.$file_source;
 			//creating folders
@@ -162,6 +171,22 @@ class StaticContentControllerHTML extends JController
 		JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_STATICCONTENT_HTML_GENERATE_HTML',$countFiles));
 		$this->setRedirect('index.php?option=com_staticcontent');
 		$this->redirect();
+	}
+
+	private function getParentItems($item,$source)
+	{
+		$db = JFactory::getDbo();
+
+		$db->setQuery('SELECT * FROM #__menu WHERE id = '.$db->quote($item->parent_id));
+		$parent = $db->loadObject();
+		if (is_object($parent)) {
+			$source = $parent->alias.DS.$source;
+			if ($parent->parent_id > 1) {
+				$source = $this->getParentitems($parent,$source);
+			}
+		}
+
+		return $source;
 	}
 	
 	private function checkMenuAccess($user,$mid)
