@@ -100,9 +100,6 @@ class StaticContentControllerHTML extends JController
 			$this->redirect();			
 		}
 
-		echo $this->base_directory;
-		exit;
-
 		foreach ($items as $item) {
 			$canAccessMenu = $this->checkMenuAccess($guest,$item->id);
 			//not copy external links and check if guest user has access
@@ -129,16 +126,17 @@ class StaticContentControllerHTML extends JController
 			$domDocument = new DOMDocument();
 			$domDocument->loadHTML($body);
 			
+
 			$links = $domDocument->getElementsByTagName('link');
 			$scripts = $domDocument->getElementsByTagName('script');
 			$images = $domDocument->getElementsByTagName('img');
 			
 			$intersect = array_intersect(explode(DS,JPATH_ROOT), explode('/',$uri->getPath()));
-			$basePath = '/'.implode('/',$intersect).'/';
-			
+			$basePath = implode('/',$intersect).'/';
+			$basePath = JPath::clean($basePath);
+		
 			$body = str_replace($uri->root(),'',$body);
 			$body = str_replace($basePath,'',$body);
-			
 			$body = $this->fixMenuLinks($body);
 			
 			foreach ($links as $link) {
