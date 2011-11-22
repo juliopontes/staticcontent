@@ -149,9 +149,15 @@ class StaticContentControllerHTML extends JController
 		$domDocument->loadHTML($body);
 		
 		$this->_internalLinks = array();
+		$base = $domDocument->getElementsByTagName('base');
 		
-		//replace base		
-		$body = str_replace('<base href="'.JUri::root().'index.php" />','<base href="index.html" />',$body);
+		//replace base
+		if ($base) {
+			foreach ($base as $node) {
+				$href = $node->getAttribute('href');
+				$body = str_replace('<base href="'.$href.'" />','<base href="index.html" />',$body);
+			}
+		}
 		
 		$links = $domDocument->getElementsByTagName('link');
 		$scripts = $domDocument->getElementsByTagName('script');
