@@ -16,7 +16,7 @@
 		<?php foreach($this->items as $item): ?>
 		<tr class="">
 			<td class="center">
-				<a target="_blank" href="<?php echo JURI::root(); ?>html/<?php echo $item; ?>"><?php echo $item; ?></a>
+				<a target="_blank" href="<?php echo $this->baseUri; ?><?php echo $item; ?>"><?php echo $item; ?></a>
 			</td>
 		</tr>
 		<?php endforeach; ?>

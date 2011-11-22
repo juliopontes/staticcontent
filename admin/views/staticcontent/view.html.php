@@ -24,6 +24,9 @@ class StaticContentViewStaticContent extends JView
 				$item = str_replace($this->base_directory.DS,'',$item);
 				$item = str_replace(DS,'/',$item);
 			}
+			
+			$folderPath = str_replace(JPATH_ROOT.DS,'',$this->base_directory);
+			$this->baseUri = JUri::root().$folderPath.'/';
 		}
 		else {
 			$this->_layout = 'preferences';
