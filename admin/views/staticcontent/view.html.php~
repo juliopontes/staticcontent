@@ -43,7 +43,7 @@ class StaticContentViewStaticContent extends JView
 		
 		if (!empty($this->base_directory)) {
 			ComStaticContentHelperToolbar::customExport();
-			JToolBarHelper::custom('html.completeExport','refresh','refresh','COM_STATICCONTENT_TOOLBAR_CREATE',false);
+			JToolBarHelper::custom('html.generate','refresh','refresh','COM_STATICCONTENT_TOOLBAR_CREATE',false);
 			
 			if(!empty($this->items)) {
 				JToolBarHelper::custom('html.delete','delete','delete','COM_STATICCONTENT_TOOLBAR_DELETE', false);

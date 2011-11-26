@@ -244,6 +244,7 @@ class StaticContentControllerHTML extends JController
 					if ($print == 1) {
 					continue;
 				}
+				$target .= '.html';
 				$target = str_replace('index.php',$this->base_directory,$target);
 				$taget = JPath::clean($target).'.html';
 				$sourceLink = $internalLink;
