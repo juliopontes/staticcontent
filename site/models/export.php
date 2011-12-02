@@ -125,6 +125,8 @@ class StaticContentModelExport extends JModel {
         $this->_links = array_merge($this->_links, $arrData);
 
         $return = $this->_writePages();
+        
+        JApplication::getInstance('site')->set('force_sef',false);
 
         echo ($return) ? JText::_('COM_STATICCONTENT_MSG_SUCCESS_CREATED_SITE') : JText::_('COM_STATICCONTENT_MSG_FAILURE_CREATED_SITE');
     }

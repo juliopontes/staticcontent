@@ -30,6 +30,25 @@
 	</div>
 </form>
 <script type="text/javascript">
+function doRequest(object)
+{
+	var myRequest = new Request({
+	    url: object.url,
+	    onRequest: function(){
+	    	$$('td.center').set('html','<br /><img src="components/com_staticcontent/images/loading.gif" /><br /><?php echo JText::_('COM_STATICCONTENT_AJAX_LOADING_MESSAGE'); ?>');
+	    },
+	    onFailure: function(){
+	    	$$('td.center').set('html','<?php echo JText::_('COM_STATICCONTENT_AJAX_FAILURE'); ?>');
+	    },
+	    onTimeout: function(){
+	    	$$('td.center').set('html','<?php echo JText::_('COM_STATICCONTENT_AJAX_TIMEOUT'); ?>');
+	    },
+	    onSuccess: function(responseText, responseXML){
+		    alert(responseText);
+			$('adminForm').submit();
+	    }
+	}).send(object.data);
+}
 function requestCustomItems(list)
 {
 	if (list.length == 0) {
@@ -42,41 +61,11 @@ function requestCustomItems(list)
 		data.push(item.name+'='+item.value);
 	});
 	
-	var myRequest = new Request({
-	    url: '<?php echo JURI::root(); ?>index.php?option=com_staticcontent&task=menuitems',
-	    onRequest: function(){
-	    	alert('Creating pages...');
-	    },
-	    onFailure: function(){
-	        console.log('Sorry, your request failed :(');
-	    },
-	    onTimeout: function(){
-	    	console.log('Sorry, your request timeout :(');
-	    },
-	    onSuccess: function(responseText, responseXML){
-			alert(responseText);
-			$('adminForm').submit();
-	    }
-	}).send(data.join('&'));
+	doRequest({url: '<?php echo JURI::root(); ?>index.php?option=com_staticcontent&task=menuitems',data: data.join('&') });
 }
 function requestAllItems()
 {
-	var myRequest = new Request({
-	    url: '<?php echo JURI::root(); ?>index.php?option=com_staticcontent&task=allpages',
-	    onRequest: function(){
-	        alert('Creating pages...');
-	    },
-	    onFailure: function(){
-	        console.log('Sorry, your request failed :(');
-	    },
-	    onTimeout: function(){
-	    	console.log('Sorry, your request timeout :(');
-	    },
-	    onSuccess: function(responseText, responseXML){
-			alert(responseText);
-			$('adminForm').submit();
-	    }
-	}).send();
+	doRequest({url: '<?php echo JURI::root(); ?>index.php?option=com_staticcontent&task=allpages'});
 }
 
 </script>

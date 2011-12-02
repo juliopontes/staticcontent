@@ -11,6 +11,8 @@ class StaticContentViewStaticContent extends JView
 		$params = JComponentHelper::getParams('com_staticcontent');
 		$base_directory = $params->get('base_directory');
 		
+		$this->sef = JFactory::getConfig()->get('sef',0);
+		
 		$this->base_directory = empty($base_directory) ? '' : JPath::clean($base_directory);
 		
 		if ( !empty($this->base_directory) )
@@ -19,19 +21,26 @@ class StaticContentViewStaticContent extends JView
 				JFolder::create($this->base_directory);
 				JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_STATICCONTENT_HTML_CREATED_DIRECTORY_MESSAGE',$this->base_directory));
 			}
-			$this->items = JFolder::files($this->base_directory, '.html', true, true);
-			foreach ($this->items as &$item) {
-				$item = JPath::clean($item);
-				$path = JPath::clean($this->base_directory.DS);
-				$item = str_replace($path,'',$item);
-				$item = str_replace(DS,'/',$item);
+			else if($this->sef == 0) {
+				$this->_layout = 'message';
+				$this->message = 'COM_STATICCONTENT_HTML_SEF_DISABLED';
 			}
-			
-			$folderPath = str_replace(JPATH_ROOT.DS,'',$this->base_directory);
-			$this->baseUri = JUri::root().$folderPath.'/';
+			else {
+				$this->items = JFolder::files($this->base_directory, '.html', true, true);
+				foreach ($this->items as &$item) {
+					$item = JPath::clean($item);
+					$path = JPath::clean($this->base_directory.DS);
+					$item = str_replace($path,'',$item);
+					$item = str_replace(DS,'/',$item);
+				}
+				
+				$folderPath = str_replace(JPATH_ROOT.DS,'',$this->base_directory);
+				$this->baseUri = JUri::root().$folderPath.'/';
+			}
 		}
 		else {
-			$this->_layout = 'preferences';
+			$this->_layout = 'message';
+			$this->message = 'COM_STATICCONTENT_HTML_CONFIG_DIRECTORY';
 		}
 		
 		$this->addToolbar();
@@ -44,8 +53,11 @@ class StaticContentViewStaticContent extends JView
 		JToolBarHelper::title('Static Content');
 		
 		if (!empty($this->base_directory)) {
-			ComStaticContentHelperToolbar::customExport();
-			ComStaticContentHelperToolbar::completeExport();
+			//if sef is enabled
+			if ($this->sef) {
+				ComStaticContentHelperToolbar::customExport();
+				ComStaticContentHelperToolbar::completeExport();
+			}
 			
 			if(!empty($this->items)) {
 				ComStaticContentHelperToolbar::custom('html.delete','delete','delete','COM_STATICCONTENT_TOOLBAR_DELETE', false);

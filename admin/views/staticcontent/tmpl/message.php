@@ -1,0 +1,1 @@
+<p><?php echo JText::_($this->message); ?></p>

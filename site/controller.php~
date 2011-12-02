@@ -58,7 +58,7 @@ class StaticContentController extends JController {
         $model = $this->getModel('export');
         $model->setItems($items);
         echo $model->createPages();
-        JFactory::getApplication('site')->close();
+        JFactory::getApplication()->close();
     }
 
 }
