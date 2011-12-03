@@ -24,4 +24,4 @@ COM_STATICCONTENT_HTML_CONFIG_PATH_IN_USE="Please, change your path directory, y
 COM_STATICCONTENT_TOOLBAR_CUSTOM_EXPORT="Custom export"
 COM_STATICCONTENT_MENUS_TITLE="Select menu items to export"
 COM_STATICCONTENT_BUTTON_CUSTOM_EXPORT="Export items"
-COM_STATICCONTENT_HTML_SEF_DISABLED="To export your site your need to turn enable SEF"
+COM_STATICCONTENT_HTML_SEF_DISABLED="You need to enable Search Engine Friendly URLs"
