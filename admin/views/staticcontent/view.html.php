@@ -15,7 +15,7 @@ class StaticContentViewStaticContent extends JView
 		
 		$this->base_directory = empty($base_directory) ? '' : JPath::clean($base_directory);
 		
-		if ( !JFolder::exists($this->base_directory) && !empty($this->base_directory) )
+		if ( JFolder::exists($this->base_directory) )
 		{
 			if (!JFolder::exists($this->base_directory)) {
 				JFolder::create($this->base_directory);
