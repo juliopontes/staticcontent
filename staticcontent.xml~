@@ -28,7 +28,6 @@
             <folder>controllers</folder>
             <folder>views</folder>
             <folder>helpers</folder>
-	    <folder>images</folder>
         </files>
     </administration>
 </extension>
