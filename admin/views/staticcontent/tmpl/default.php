@@ -32,22 +32,16 @@
 <script type="text/javascript">
 function doRequest(object)
 {
-	var myRequest = new Request({
-	    url: object.url,
-	    onRequest: function(){
-	    	$$('td.center').set('html','<br /><img src="components/com_staticcontent/images/loading.gif" /><br /><?php echo JText::_('COM_STATICCONTENT_AJAX_LOADING_MESSAGE'); ?>');
-	    },
-	    onFailure: function(){
-	    	$$('td.center').set('html','<?php echo JText::_('COM_STATICCONTENT_AJAX_FAILURE'); ?>');
-	    },
-	    onTimeout: function(){
-	    	$$('td.center').set('html','<?php echo JText::_('COM_STATICCONTENT_AJAX_TIMEOUT'); ?>');
-	    },
-	    onSuccess: function(responseText, responseXML){
-		    alert(responseText);
-			$('adminForm').submit();
-	    }
-	}).send(object.data);
+	jQuery.ajax({
+		url: object.url,
+		data: object.data,
+		success: function (data) {
+			console.log(data);
+		},
+		error: function (data) {
+			console.log(data);
+		}
+	});
 }
 function requestCustomItems(list)
 {

@@ -2,13 +2,12 @@
 <extension type="component" version="1.7" method="upgrade">
     <name>com_staticcontent</name>
     <author>Julio Pontes</author>
-    <creationDate>April 2006</creationDate>
-    <copyright>(C) 2005 - 2011 Open Source Matters. All rights reserved.
-    </copyright>
+    <creationDate>April 2013</creationDate>
+    <copyright>(C) 2005 - 2011 Open Source Matters. All rights reserved.</copyright>
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <authorEmail>juliopfneto@gmail.com</authorEmail>
     <authorUrl></authorUrl>
-    <version>1.7.0</version>
+    <version>3.0</version>
     <description>COM_STATICCONTENT_XML_DESCRIPTION</description>
     <files folder="site">
         <filename>staticcontent.php</filename>
@@ -28,7 +27,8 @@
             <folder>controllers</folder>
             <folder>views</folder>
             <folder>helpers</folder>
-	    <folder>images</folder>
+	    	<folder>images</folder>
+	    	<folder>js</folder>
         </files>
 	<languages folder="admin">
 		<language tag="en-GB">language/en-GB.com_staticcontent.ini</language>

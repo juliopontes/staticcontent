@@ -2,9 +2,7 @@
 // No direct access.
 defined('_JEXEC') or die;
 
-jimport('joomla.application.component.view');
-
-class StaticContentViewStaticContent extends JView
+class StaticContentViewStaticContent extends View
 {
 	public function display($tpl = null)
 	{
@@ -15,14 +13,13 @@ class StaticContentViewStaticContent extends JView
 
 		$this->base_directory = empty($base_directory) ? '' : JPath::clean($base_directory);
 
-		if (!JFolder::exists($this->base_directory)) {
+		if (!JFolder::exists($this->base_directory)  && !empty($this->base_directory)) {
 				JFolder::create($this->base_directory);
 				JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_STATICCONTENT_HTML_CREATED_DIRECTORY_MESSAGE',$this->base_directory));
 		}
 
-		if ( JFolder::exists($this->base_directory) )
+		if ( JFolder::exists($this->base_directory)  && !empty($this->base_directory) )
 		{
-
 			if($this->sef == 0) {
 				$this->_layout = 'message';
 				$this->message = 'COM_STATICCONTENT_HTML_SEF_DISABLED';
@@ -31,12 +28,12 @@ class StaticContentViewStaticContent extends JView
 				$this->items = JFolder::files($this->base_directory, '.html', true, true);
 				foreach ($this->items as &$item) {
 					$item = JPath::clean($item);
-					$path = JPath::clean($this->base_directory.DS);
+					$path = JPath::clean($this->base_directory.DIRECTORY_SEPARATOR);
 					$item = str_replace($path,'',$item);
-					$item = str_replace(DS,'/',$item);
+					$item = str_replace(DIRECTORY_SEPARATOR,'/',$item);
 				}
 
-				$folderPath = str_replace(JPATH_ROOT.DS,'',$this->base_directory);
+				$folderPath = str_replace(JPATH_ROOT.DIRECTORY_SEPARATOR,'',$this->base_directory);
 				$this->baseUri = JUri::root().$folderPath.'/';
 			}
 		}

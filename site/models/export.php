@@ -9,8 +9,6 @@
 // No direct access.
 defined('_JEXEC') or die;
 
-jimport('joomla.application.component.modellist');
-
 /**
  * Method for suporting export html
  *
@@ -18,7 +16,7 @@ jimport('joomla.application.component.modellist');
  * @subpackage	com_staticcontent
  * @since		1.7
  */
-class StaticContentModelExport extends JModel {
+class StaticContentModelExport extends Model {
 
     /**
      * Array of menu items
@@ -59,7 +57,7 @@ class StaticContentModelExport extends JModel {
         parent::__construct($config);
 
         //initialize vars
-        $this->option = JRequest::getCmd('option');
+        $this->option = JFactory::getApplication()->input->get('option');
         $this->_comParams = JComponentHelper::getParams($this->option);
 
         //cache callbacks
@@ -114,7 +112,6 @@ class StaticContentModelExport extends JModel {
             return false;
         }
 
-        //$this->_links['menu'] = $this->_requestPageItems($this->items);
         $cache_id = md5(get_class($this) . '_requestPageItems_' . count($this->items));
         $this->_links['menu'] = $this->_cache->get(array($this, '_requestPageItems'), array($this->items), $cache_id);
 
@@ -124,15 +121,12 @@ class StaticContentModelExport extends JModel {
         //register menu links in class
         StaticContentHelperMenu::setLinks(JArrayHelper::getColumn($this->_links['menu'], 'full'));
 
-        //$this->_links['internal'] = $this->_discoverInteralLinks();
         $cache_id = md5(get_class($this) . '_discoverInteralLinks' . count($this->_links['menu']));
         $arrData = $this->_cache->get(array($this, '_discoverInteralLinks'), array(), $cache_id);
 
         $this->_links = array_merge($this->_links, $arrData);
 
         $return = $this->_writePages();
-        
-        JApplication::getInstance('site')->set('force_sef',false);
 
         echo ($return) ? JText::_('COM_STATICCONTENT_MSG_SUCCESS_CREATED_SITE') : JText::_('COM_STATICCONTENT_MSG_FAILURE_CREATED_SITE');
     }
@@ -160,11 +154,11 @@ class StaticContentModelExport extends JModel {
             if (!$this->existsLink($relative_link)) {
                 $content = $this->_requestPage($full_link);
 
-                $link = new JObject();
-                $link->set('file', $pageName);
-                $link->set('full', $full_link);
-                $link->set('relative', $relative_link);
-                $link->set('content', $content);
+                $link = new stdClass();
+                $link->file = $pageName;
+                $link->full = $full_link;
+                $link->relative = $relative_link;
+                $link->content = $content;
 
                 //add a link
                 array_push($this->tmpLinks, $link);
@@ -186,7 +180,7 @@ class StaticContentModelExport extends JModel {
 
         foreach ($this->_links['menu'] as $link) {
             $dom = new DomDocument();
-            $dom->loadHTML($link->get('content'));
+            $dom->loadHTML($link->content);
 
             $aElements = $dom->getElementsByTagName('a');
 
@@ -214,11 +208,11 @@ class StaticContentModelExport extends JModel {
                         $this->_cachePage->store($content, $cache_id);
                     }
 
-                    $link = new JObject();
-                    $link->set('file', $pageName);
-                    $link->set('full', $full_link);
-                    $link->set('relative', $relative_link);
-                    $link->set('content', $content);
+                    $link = new stdClass();
+                    $link->file = $pageName;
+                    $link->full = $full_link;
+                    $link->relative = $relative_link;
+                    $link->content = $content;
 
                     array_push($tmpLinks['pages'], $link);
                 }
@@ -277,7 +271,7 @@ class StaticContentModelExport extends JModel {
     }
 
     private function _writePage($page) {
-        $basePath = JPath::clean($this->_comParams->get('base_directory') . DS);
+        $basePath = JPath::clean($this->_comParams->get('base_directory') . DIRECTORY_SEPARATOR);
 
         $fileDirectoryPath = JPath::clean(dirname($basePath . $page->file));
         $filePath = JPath::clean($basePath . $page->file);

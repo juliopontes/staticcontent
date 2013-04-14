@@ -8,9 +8,7 @@
  */
 defined('_JEXEC') or die('Restricted access');
 
-jimport('joomla.application.component.controller');
-
-class StaticContentController extends JController {
+class StaticContentController extends Controller {
 
     /**
      * @return void

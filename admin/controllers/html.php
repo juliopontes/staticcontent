@@ -8,9 +8,7 @@
  */
 defined('_JEXEC') or die('Restricted access');
 
-jimport('joomla.application.component.controller');
-
-class StaticContentControllerHTML extends JController {
+class StaticContentControllerHTML extends Controller {
 
     /**
      * @var		string	The default view.
@@ -55,7 +53,7 @@ class StaticContentControllerHTML extends JController {
         $config = new JConfig();
         $fileName = $config->sitename . md5(JURI::root()) . '.zip';
 
-        $file = JPATH_ROOT . DS . 'tmp' . DS . $fileName;
+        $file = $config->tmp_path . DIRECTORY_SEPARATOR . $fileName;
         JFile::delete($file);
         if (!$adapter->create($file, $files)) {
             JFactory::getApplication()->redirect('index.php?option=com_staticcontent&view=staticcontent', JText::_('COM_STATICCONTENT_HTML_ZIP_ERROR'));

@@ -2,13 +2,11 @@
 // No direct access.
 defined('_JEXEC') or die;
 
-jimport('joomla.application.component.view');
-
-class StaticContentViewMenus extends JView
+class StaticContentViewMenus extends View
 {
 	public function display($tpl = null)
 	{
-		JModel::addIncludePath(JPATH_BASE.DS.'components'.DS.'com_menus'.DS.'models');
+		Model::addIncludePath(JPATH_BASE.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'com_menus'.DIRECTORY_SEPARATOR.'models');
 		
 		$model = JModel::getInstance('Menus','MenusModel');
 		

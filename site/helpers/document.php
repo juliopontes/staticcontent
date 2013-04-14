@@ -110,7 +110,7 @@ abstract class StaticContentHelperDocument
 	
 	static public function copyFile($node,$attribute)
 	{
-		$option = JRequest::getCmd('option');
+		$option = JFactory::getApplication()->input->get('option');
 		$comParams = JComponentHelper::getParams($option);
 		$path_source = JPath::clean($comParams->get('base_directory'));
 		
@@ -119,27 +119,38 @@ abstract class StaticContentHelperDocument
 			$uri = JFactory::getURI($url);
 			
 			$interno = false;
-			
+
 			$uriHost = $uri->getHost();
-			if (!empty($uriHost) && $uriHost == JURI::getInstance()->getHost()) $interno = true;
+			if ( (!empty($uriHost) && $uriHost == JURI::getInstance()->getHost()) || strpos($url,JURI::base(true))) $interno = true;
 			
 			if(JURI::isInternal($url) == $interno || strpos($url,'index.php') !== false) return;
-			
-			$tmp = str_replace('/',DS,$uri->getPath());
-			$intersect = array_intersect(explode(DS,JPATH_ROOT), explode(DS,$tmp));
+
+			$path = $uri->getPath();
+
+			if (strpos($path,'~') > 0) {
+				$path = explode('/',$path);
+				array_shift($path);
+				array_shift($path);
+				$path = implode($path,'/');
+			}
+
+			$tmp = str_replace('/',DIRECTORY_SEPARATOR,$path);
+
+			$intersect = array_intersect(explode(DIRECTORY_SEPARATOR,JPATH_ROOT), explode(DIRECTORY_SEPARATOR,$tmp));
+			$intersect = array_filter($intersect);
 			$tmpBasePath = implode('/',$intersect);
 			if (!empty($tmpBasePath)) $tmpBasePath .= '/';
 			
 			if (!empty($tmpBasePath)) {
-				$path = str_replace($tmpBasePath,'',$uri->getPath());
+				$path = str_replace($tmpBasePath,'',$path);
 			}
 			else {
 				$path = $uri->getPath();
 			}
 			
-			$sourceFilePath = JPath::clean(JPATH_ROOT.DS.$path);
-			$filePath = JPath::clean($path_source.DS.$path);
-			
+			$sourceFilePath = JPath::clean(JPATH_ROOT.DIRECTORY_SEPARATOR.$path);
+			$filePath = JPath::clean($path_source.DIRECTORY_SEPARATOR.$path);
+
 			if (JFile::exists($sourceFilePath)) {
 				//creating folders
 				JFolder::create(dirname($filePath));
@@ -152,8 +163,8 @@ abstract class StaticContentHelperDocument
 						preg_match_all('/(url|URL)\(.*?\)/i', $css_file_content, $data_array);
 						
 						if (!empty($data_array[0])) {
-							$baseSourceFilePath = dirname($sourceFilePath).DS;
-							$baseFilePath = dirname($filePath).DS;
+							$baseSourceFilePath = dirname($sourceFilePath).DIRECTORY_SEPARATOR;
+							$baseFilePath = dirname($filePath).DIRECTORY_SEPARATOR;
 							foreach($data_array[0] as $img) {
 								$removeDirs = substr_count($img,'../');
 								$clean_path = str_replace('../','',$img);
@@ -164,8 +175,8 @@ abstract class StaticContentHelperDocument
 								$clean_path = str_replace('URL','',$clean_path);
 								
 								for ($d=1;$d<=$removeDirs;$d++) {
-									$sourceFilePath = dirname($baseSourceFilePath).DS;
-									$filePath = dirname($baseFilePath).DS;
+									$sourceFilePath = dirname($baseSourceFilePath).DIRECTORY_SEPARATOR;
+									$filePath = dirname($baseFilePath).DIRECTORY_SEPARATOR;
 								}
 								$sourceFilePath = $sourceFilePath.$clean_path;
 								$filePath = $filePath.$clean_path;

@@ -9,10 +9,35 @@
 defined('_JEXEC') or die('Restricted access');
 
 // Include dependancies
-jimport('joomla.application.component.controller');
+if (JVERSION >= '3.0')
+{
+	jimport('legacy.model.legacy');
+	jimport('legacy.controller.legacy');
+	jimport('legacy.view.legacy');
+
+	class_alias('JControllerLegacy', 'Controller');
+	class_alias('JModelLegacy', 'Model');
+	class_alias('JViewLegacy', 'View');
+}
+else
+{
+	jimport('joomla.application.component.controller');
+	jimport('joomla.application.component.model');
+	jimport('joomla.application.component.view');
+	
+	class_alias('JController', 'Controller');
+	class_alias('JModel', 'Model');
+	class_alias('JView', 'View');
+}
+
+//import filesystem
+
+jimport('joomla.filesystem.path');
+jimport('joomla.filesystem.folder');
+jimport('joomla.filesystem.file');
 
 require_once 'controller.php';
 
-$controller = JController::getInstance('StaticContent');
-$controller->execute(JRequest::getCmd('task'));
+$controller = Controller::getInstance('StaticContent');
+$controller->execute(JFactory::getApplication()->input->get('task'));
 $controller->redirect();

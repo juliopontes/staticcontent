@@ -145,8 +145,8 @@ class StaticContentDocument {
             if (JURI::isInternal($url) == $interno || strpos($url, 'index.php') !== false)
                 return;
 
-            $tmp = str_replace('/', DS, $uri->getPath());
-            $intersect = array_intersect(explode(DS, JPATH_ROOT), explode(DS, $tmp));
+            $tmp = str_replace('/', DIRECTORY_SEPARATOR, $uri->getPath());
+            $intersect = array_intersect(explode(DIRECTORY_SEPARATOR, JPATH_ROOT), explode(DIRECTORY_SEPARATOR, $tmp));
             $tmpBasePath = implode('/', $intersect);
             if (!empty($tmpBasePath))
                 $tmpBasePath .= '/';
@@ -157,8 +157,8 @@ class StaticContentDocument {
                 $path = $uri->getPath();
             }
 
-            $sourceFilePath = JPath::clean(JPATH_ROOT . DS . $path);
-            $filePath = JPath::clean($path_source . DS . $path);
+            $sourceFilePath = JPath::clean(JPATH_ROOT . DIRECTORY_SEPARATOR . $path);
+            $filePath = JPath::clean($path_source . DIRECTORY_SEPARATOR . $path);
 
             if (JFile::exists($sourceFilePath)) {
                 //creating folders
@@ -171,8 +171,8 @@ class StaticContentDocument {
                         preg_match_all('/(url|URL)\(.*?\)/i', $css_file_content, $data_array);
 
                         if (!empty($data_array[0])) {
-                            $baseSourceFilePath = dirname($sourceFilePath) . DS;
-                            $baseFilePath = dirname($filePath) . DS;
+                            $baseSourceFilePath = dirname($sourceFilePath) . DIRECTORY_SEPARATOR;
+                            $baseFilePath = dirname($filePath) . DIRECTORY_SEPARATOR;
                             foreach ($data_array[0] as $img) {
                                 $removeDirs = substr_count($img, '../');
                                 $clean_path = str_replace('../', '', $img);
@@ -183,8 +183,8 @@ class StaticContentDocument {
                                 $clean_path = str_replace('URL', '', $clean_path);
 
                                 for ($d = 1; $d <= $removeDirs; $d++) {
-                                    $sourceFilePath = dirname($baseSourceFilePath) . DS;
-                                    $filePath = dirname($baseFilePath) . DS;
+                                    $sourceFilePath = dirname($baseSourceFilePath) . DIRECTORY_SEPARATOR;
+                                    $filePath = dirname($baseFilePath) . DIRECTORY_SEPARATOR;
                                 }
                                 $sourceFilePath = $sourceFilePath . $clean_path;
                                 $filePath = $filePath . $clean_path;
