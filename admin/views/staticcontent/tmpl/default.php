@@ -36,7 +36,8 @@ function doRequest(object)
 		url: object.url,
 		data: object.data,
 		success: function (data) {
-			console.log(data);
+			alert(data);
+			window.location.href = '<?php echo JRoute::_('index.php?option=com_staticcontent&view=staticcontent'); ?>';
 		},
 		error: function (data) {
 			console.log(data);
