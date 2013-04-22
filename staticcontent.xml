@@ -13,7 +13,6 @@
         <filename>staticcontent.php</filename>
         <filename>controller.php</filename>
         <filename>index.html</filename>
-        <folder>lib</folder>
         <folder>models</folder>
         <folder>helpers</folder>
     </files>

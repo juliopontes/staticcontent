@@ -266,6 +266,8 @@ class StaticContentModelExport extends Model {
             if (!$this->_writePage($internalPage))
                 die(JText::sprintf('COM_STATICCONTENT_MSG_FAILURE_CREATE_FILE', $internalPage->file));
         }
+        
+        StaticContentHelperDocument::writeLog();
 
         return true;
     }

@@ -1,6 +1,10 @@
 <?php
+jimport('joomla.log.log');
+
 abstract class StaticContentHelperDocument
 {
+	private static $_LOG;
+	
 	static public function body($page,$pageLinks,$itemLevel)
 	{
 		$baseFolder = ($itemLevel <= 0) ? '' : str_repeat('../',$itemLevel) ;
@@ -24,6 +28,7 @@ abstract class StaticContentHelperDocument
 		$images = $domDocument->getElementsByTagName('img');
 	
 		$body = str_replace(JURI::root(),'',$body);
+		
 		
 		foreach ($links as $link) {
 			$linkHref = $link->getAttribute('href');
@@ -117,7 +122,6 @@ abstract class StaticContentHelperDocument
 		if ($node->hasAttribute($attribute)) {
 			$url = $node->getAttribute($attribute);
 			$uri = JFactory::getURI($url);
-			
 			$interno = false;
 
 			$uriHost = $uri->getHost();
@@ -133,7 +137,7 @@ abstract class StaticContentHelperDocument
 				array_shift($path);
 				$path = implode($path,'/');
 			}
-
+			$uri->setPath($path);
 			$tmp = str_replace('/',DIRECTORY_SEPARATOR,$path);
 
 			$intersect = array_intersect(explode(DIRECTORY_SEPARATOR,JPATH_ROOT), explode(DIRECTORY_SEPARATOR,$tmp));
@@ -148,6 +152,8 @@ abstract class StaticContentHelperDocument
 				$path = $uri->getPath();
 			}
 			
+			if (empty($path) || $path == '<') return;
+			
 			$sourceFilePath = JPath::clean(JPATH_ROOT.DIRECTORY_SEPARATOR.$path);
 			$filePath = JPath::clean($path_source.DIRECTORY_SEPARATOR.$path);
 
@@ -158,17 +164,19 @@ abstract class StaticContentHelperDocument
 				if (JFile::copy($sourceFilePath, $filePath)) {
 					//copy all url(*) data
 					if (strtolower( JFile::getExt($sourceFilePath) ) == 'css') {
-						//$break = (JFile::getName($sourceFilePath) == 'personal.css');
 						$css_file_content = JFile::read($sourceFilePath);
 						preg_match_all('/(url|URL)\(.*?\)/i', $css_file_content, $data_array);
-						
 						if (!empty($data_array[0])) {
 							$baseSourceFilePath = dirname($sourceFilePath).DIRECTORY_SEPARATOR;
 							$baseFilePath = dirname($filePath).DIRECTORY_SEPARATOR;
+							
 							foreach($data_array[0] as $img) {
-								$removeDirs = substr_count($img,'../');
+								$img = trim($img);
+								$removeDirs = substr_count($img,'./');
+								$removeDirs += substr_count($img,'../');
 								$clean_path = str_replace('../','',$img);
 								$clean_path = str_replace('"','',$clean_path);
+								$clean_path = str_replace("'",'',$clean_path);
 								$clean_path = str_replace('(','',$clean_path);
 								$clean_path = str_replace(')','',$clean_path);
 								$clean_path = str_replace('url','',$clean_path);
@@ -189,6 +197,8 @@ abstract class StaticContentHelperDocument
 									if (!JFile::copy($sourceFilePath, $filePath)) {
 										die(JText::sprintf('COM_STATICCONTENT_MSG_FAILURE_COPY_FILE',$sourceFilePath));
 									}
+								} else {
+									self::log("Cant copy file {$sourceFilePath}");
 								}
 							}
 						}
@@ -197,7 +207,30 @@ abstract class StaticContentHelperDocument
 				else {
 					die(JText::sprintf('COM_STATICCONTENT_MSG_FAILURE_COPY_FILE',$sourceFilePath));
 				}
+			} else {
+				self::log("Cant find file {$sourceFilePath}");
 			}
 		}
+	}
+	
+	static private function log($message)
+	{
+		if (empty(self::$_LOG[$message]))
+			self::$_LOG[$message] = true;
+	}
+	
+	public static function writeLog()
+	{
+		$date = JFactory::getDate()->format('Y-m-d');
+
+		// Add the logger.
+		JLog::addLogger(
+		    array(
+		        'text_file' => 'com_statiscontent.'.$date.'.php'
+		    )
+		);
+		
+		foreach (self::$_LOG as $message => $trunk)
+			JLog::add($message);
 	}
 }
