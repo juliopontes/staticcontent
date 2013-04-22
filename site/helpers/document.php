@@ -29,10 +29,16 @@ abstract class StaticContentHelperDocument
 	
 		$body = str_replace(JURI::root(),'',$body);
 		
+		$rootURL = JURI::root(true);
+		$baseURL = JURI::base(true);
 		
 		foreach ($links as $link) {
 			$linkHref = $link->getAttribute('href');
-			$cleanLinkHref = str_replace(JURI::root(true).'/', '', $linkHref);
+			if (!empty($rootURL)) {
+				$cleanLinkHref = str_replace(JURI::root(true).'/', '', $linkHref);
+			} else {
+				$cleanLinkHref = $linkHref;
+			}
 			if (strpos($linkHref,'format=feed') !== false) {
 				$cleanLinkHref = 'feed.xml';
 			}
@@ -43,7 +49,8 @@ abstract class StaticContentHelperDocument
 			$imgHref = $img->getAttribute('src');
 			
 			$cleanImgHref = str_replace(str_replace(JURI::base(true),'',JURI::base()), '', $imgHref);
-			$cleanImgHref = str_replace(JURI::base(true).'/', '', $cleanImgHref);
+			if (!empty($baseURL))
+				$cleanImgHref = str_replace(JURI::base(true).'/', '', $cleanImgHref);
 			$cleanImgHref = str_replace(JURI::base(true), '', $cleanImgHref);
 			$img->setAttribute('src',$cleanImgHref);
 			$body = str_replace('src="'.$imgHref.'"','src="'.$cleanImgHref.'"',$body);
@@ -52,7 +59,11 @@ abstract class StaticContentHelperDocument
 		}
 		foreach ($scripts as $script) {
 			$scriptHref = $script->getAttribute('src');
-			$cleanScriptHref = str_replace(JURI::root(true).'/', '', $scriptHref);
+			if (!empty($rootURL)) {
+				$cleanScriptHref = str_replace(JURI::root(true).'/', '', $scriptHref);
+			} else {
+				$cleanScriptHref = $scriptHref;
+			}
 			$body = str_replace('src="'.$scriptHref.'"','src="'.$cleanScriptHref.'"',$body);
 			self::copyFile($script, 'src');
 		}
