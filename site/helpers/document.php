@@ -43,8 +43,8 @@ abstract class StaticContentHelperDocument
 			} else {
 				$cleanLinkHref = $linkHref;
 			}
-			if (strpos($linkHref,'format=feed') !== false) {
-                $cleanLinkHref = StaticContentHelperUrl::getRelativeLink(strstr($cleanLinkHref, '?', true)) . '/feed.xml';
+            if (StaticContentHelperUrl::isFeedLink($linkHref)) {
+                $cleanLinkHref = StaticContentHelperUrl::getRelativeLink(strstr($cleanLinkHref, '?', true)) . '-feed';
 			}
 			$body = str_replace('href="'.htmlspecialchars($linkHref).'"','href="'.$cleanLinkHref.'"',$body);
 			self::copyFile($link, 'href');

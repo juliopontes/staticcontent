@@ -35,6 +35,9 @@ abstract class StaticContentHelperUrl {
                 if (self::isPrintLink($url)) {
                     $url = self::stripParameter($url);
                     $url .= '-print';
+                } elseif (self::isFeedLink($url)) {
+                    $url = self::stripParameter($url);
+                    $url .= '-feed';
                 } else {
                     $url = self::stripParameter($url);
                 }
@@ -148,6 +151,16 @@ abstract class StaticContentHelperUrl {
      */
     static public function isPrintLink($url) {
         return (strpos($url, 'print=1') !== false) ? true : false;
+    }
+
+    /**
+     * Check if url is a feed
+     *
+     * @param string $url
+     * @return boolean TRUE if its a feed
+     */
+    static public function isFeedLink($url) {
+        return (strpos($url, 'format=feed') !== false) ? true : false;
     }
 
     /**
