@@ -13,13 +13,17 @@ abstract class StaticContentHelperDocument
 		$domDocument = new DOMDocument();
 		$domDocument->loadHTML($body);
 		
-		$base = $domDocument->getElementsByTagName('base');		
-		
+		$base = $domDocument->getElementsByTagName('base');
+
+        $option = JFactory::getApplication()->input->get('option');
+        $comParams = JComponentHelper::getParams($option);
+        $newBaseURL = $comParams->get('base_url', $baseFolder. 'index.html');
+
 		//replace base
 		if (!empty($base)) {
 			foreach ($base as $node) {
 				$href = $node->getAttribute('href');
-				$body = str_replace('<base href="'.$href.'" />','<base href="'.$baseFolder.'index.html" />',$body);
+				$body = str_replace('<base href="'.$href.'" />','<base href="'.$newBaseURL.'" />',$body);
 			}
 		}
 		
@@ -40,7 +44,7 @@ abstract class StaticContentHelperDocument
 				$cleanLinkHref = $linkHref;
 			}
 			if (strpos($linkHref,'format=feed') !== false) {
-				$cleanLinkHref = 'feed.xml';
+                $cleanLinkHref = StaticContentHelperUrl::getRelativeLink(strstr($cleanLinkHref, '?', true)) . '/feed.xml';
 			}
 			$body = str_replace('href="'.htmlspecialchars($linkHref).'"','href="'.$cleanLinkHref.'"',$body);
 			self::copyFile($link, 'href');
@@ -82,17 +86,15 @@ abstract class StaticContentHelperDocument
 	static public function fixMenuLinks($body,$menuItems)
 	{
 		foreach ($menuItems['menu'] as $menuItem)
-		{	
-			$sefLink = $menuItem->file;
+		{
 			$originalLink = JURI::root(true).'/'.$menuItem->relative;
-			$body = str_replace('href="'.$originalLink.'"','href="'.$sefLink.'"',$body);
+			$body = str_replace('href="'.$originalLink.'"','href="'.$menuItem->relative.'"',$body);
 		}
 		
 		foreach ($menuItems['pages'] as $menuItem)
-		{	
-			$sefLink = $menuItem->file;
+		{
 			$originalLink = JURI::root(true).'/'.$menuItem->relative;
-			$body = str_replace('href="'.$originalLink.'"','href="'.$sefLink.'"',$body);
+			$body = str_replace('href="'.$originalLink.'"','href="'.$menuItem->relative.'"',$body);
 		}
 		
 		return $body;
@@ -100,9 +102,17 @@ abstract class StaticContentHelperDocument
 	
 	static public function fixPrintLinks($body,$printLinks)
 	{
+        if (empty($body)) {
+            return $body;
+        }
+
 		foreach ($printLinks as $originaPrintLink => $sefPrintLink) {
-			$originaPrintLink = str_replace(JURI::base(true).'/','', $originaPrintLink);
-			$body = str_replace('href="'.$originaPrintLink.'"','href="'.$sefPrintLink.'"',$body);
+            //remove base
+            $base = JURI::root(true);
+            if ($base && strpos($originaPrintLink, $base . '/') === 0) {
+                $originaPrintLink = substr($originaPrintLink, strlen($base . '/'));
+            }
+			$body = str_replace('href="'.htmlspecialchars($originaPrintLink).'"','href="'.$sefPrintLink.'"',$body);
 		}
 		
 		return $body;
