@@ -15,9 +15,9 @@ abstract class StaticContentHelperDocument
 		
 		$base = $domDocument->getElementsByTagName('base');
 
-        $option = JFactory::getApplication()->input->get('option');
-        $comParams = JComponentHelper::getParams($option);
-        $newBaseURL = $comParams->get('base_url', $baseFolder. 'index.html');
+		$option = JFactory::getApplication()->input->get('option');
+		$comParams = JComponentHelper::getParams($option);
+		$newBaseURL = $comParams->get('base_url', $baseFolder. 'index.html');
 
 		//replace base
 		if (!empty($base)) {
@@ -43,8 +43,8 @@ abstract class StaticContentHelperDocument
 			} else {
 				$cleanLinkHref = $linkHref;
 			}
-            if (StaticContentHelperUrl::isFeedLink($linkHref)) {
-                $cleanLinkHref = StaticContentHelperUrl::getRelativeLink(strstr($cleanLinkHref, '?', true)) . '-feed';
+			if (StaticContentHelperUrl::isFeedLink($linkHref)) {
+				$cleanLinkHref = StaticContentHelperUrl::getRelativeLink(strstr($cleanLinkHref, '?', true)) . '-feed';
 			}
 			$body = str_replace('href="'.htmlspecialchars($linkHref).'"','href="'.$cleanLinkHref.'"',$body);
 			self::copyFile($link, 'href');
@@ -102,19 +102,19 @@ abstract class StaticContentHelperDocument
 	
 	static public function fixPrintLinks($body,$printLinks)
 	{
-        if (empty($body)) {
-            return $body;
-        }
+		if (empty($body)) {
+			return $body;
+        	}
 
 		foreach ($printLinks as $originaPrintLink => $sefPrintLink) {
-            //remove base
-            $base = JURI::root(true);
-            if ($base && strpos($originaPrintLink, $base . '/') === 0) {
-                $originaPrintLink = substr($originaPrintLink, strlen($base . '/'));
-            }
+			//remove base
+			$base = JURI::root(true);
+			if ($base && strpos($originaPrintLink, $base . '/') === 0) {
+				$originaPrintLink = substr($originaPrintLink, strlen($base . '/'));
+			}
 			$body = str_replace('href="'.htmlspecialchars($originaPrintLink).'"','href="'.$sefPrintLink.'"',$body);
 		}
-		
+
 		return $body;
 	}
 	
