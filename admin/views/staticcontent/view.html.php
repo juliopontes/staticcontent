@@ -33,8 +33,7 @@ class StaticContentViewStaticContent extends View
 					$item = str_replace(DIRECTORY_SEPARATOR,'/',$item);
 				}
 
-				$folderPath = str_replace(JPATH_ROOT.DIRECTORY_SEPARATOR,'',$this->base_directory);
-				$this->baseUri = JUri::root().$folderPath.'/';
+				$this->baseUri = rtrim($params->get('base_url'), '/') .'/';
 			}
 		}
 		else {
