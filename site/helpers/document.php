@@ -4,13 +4,15 @@ jimport('joomla.log.log');
 abstract class StaticContentHelperDocument
 {
 	private static $_LOG;
-
+	
 	static public function body($page,$pageLinks,$itemLevel)
 	{
 		// $baseFolder = ($itemLevel <= 0) ? '' : str_repeat('../',$itemLevel) ;
 		$body = $page->content;
 		$domDocument = new DOMDocument();
 		$domDocument->loadHTML($body);
+		
+		$base = $domDocument->getElementsByTagName('base');
 
 		$option = JFactory::getApplication()->input->get('option');
 		$comParams = JComponentHelper::getParams($option);
@@ -97,9 +99,9 @@ abstract class StaticContentHelperDocument
 	
 	static public function fixPrintLinks($body,$printLinks)
 	{
-		if (empty($body)) {
-			return $body;
-        	}
+        if (empty($body)) {
+            return $body;
+        }
 
 		foreach ($printLinks as $originaPrintLink => $sefPrintLink) {
 			//remove base
@@ -109,7 +111,7 @@ abstract class StaticContentHelperDocument
 			}
 			$body = str_replace('href="'.htmlspecialchars($originaPrintLink).'"','href="'.$sefPrintLink.'"',$body);
 		}
-
+		
 		return $body;
 	}
 	
@@ -138,6 +140,7 @@ abstract class StaticContentHelperDocument
 		if ($node->hasAttribute($attribute)) {
 			$url = $node->getAttribute($attribute);
 			$uri = JFactory::getURI($url);
+			$interno = false;
 
             if (!JURI::isInternal($url)) {
                 return;
