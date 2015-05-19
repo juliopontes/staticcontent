@@ -12,7 +12,7 @@ abstract class StaticContentHelperUrl {
 
     /**
      * Return URL without GET parameters
-     * 
+     *
      * @param string $link
      * @return formated string
      */
@@ -22,19 +22,22 @@ abstract class StaticContentHelperUrl {
 
     /**
      * Create a page name based on URL
-     * 
+     *
      * @param string $url
      * @return string filename
      */
     static public function createPageName($url) {
         if ($url == JURI::root()) {
-            $url = 'index';
+            $url = '';
         } else {
             $url = self::getPath($url);
             if (self::hasParameters($url)) {
                 if (self::isPrintLink($url)) {
                     $url = self::stripParameter($url);
                     $url .= '-print';
+                } elseif (self::isFeedLink($url)) {
+                    $url = self::stripParameter($url);
+                    $url .= '-feed';
                 } else {
                     $url = self::stripParameter($url);
                 }
@@ -53,7 +56,7 @@ abstract class StaticContentHelperUrl {
 
     /**
      * Return a replative link
-     * 
+     *
      * @param string $url
      * @return string $url formated string
      */
@@ -63,17 +66,29 @@ abstract class StaticContentHelperUrl {
         }
 
         //remove root url
-        $url = str_replace(JURI::root(), '', $url);
+        if (strpos($url, JURI::root()) === 0) {
+            $url = substr($url, strlen(JURI::root()));
+        }
+
         //remove base
-        $url = str_replace(JURI::base(true) . '/', '', $url);
-        $url = str_replace(JURI::base(true), '', $url);
+        $base = JURI::root(true);
+        if (strpos($url, $base . '/') === 0) {
+            $url = substr($url, strlen($base . '/'));
+        } elseif ($base && strpos($url, $base) === 0) {
+            $url = substr($url, strlen($base));
+        }
+
+        // Home page
+        if (empty($url)) {
+            $url = '/';
+        }
 
         return $url;
     }
 
     /**
      * Return full link url
-     * 
+     *
      * @param string $url
      * @return string $url formated string
      */
@@ -83,9 +98,16 @@ abstract class StaticContentHelperUrl {
         }
 
         //remove root url
-        $url = str_replace(JURI::root(), '', $url);
+        if (strpos($url, JURI::root()) === 0) {
+            $url = substr($url, strlen(JURI::root()));
+        }
+
         //remove base
-        $url = str_replace(JURI::base(true) . '/', '', $url);
+        $base = JURI::root(true);
+        if (strpos($url, $base . '/') === 0) {
+            $url = substr($url, strlen($base . '/'));
+        }
+
         //add root
         $url = JURI::base() . $url;
         //strip format
@@ -96,7 +118,7 @@ abstract class StaticContentHelperUrl {
 
     /**
      * Count page item level
-     * 
+     *
      * @param string $url
      * @return INT	item level from root
      */
@@ -110,7 +132,7 @@ abstract class StaticContentHelperUrl {
 
     /**
      * return URI path form url
-     * 
+     *
      * @param string $url
      * @return string $url
      */
@@ -123,7 +145,7 @@ abstract class StaticContentHelperUrl {
 
     /**
      * Check if url is a print page
-     * 
+     *
      * @param string $url
      * @return boolean TRUE if its a print page
      */
@@ -132,8 +154,18 @@ abstract class StaticContentHelperUrl {
     }
 
     /**
+     * Check if url is a feed
+     *
+     * @param string $url
+     * @return boolean TRUE if its a feed
+     */
+    static public function isFeedLink($url) {
+        return (strpos($url, 'format=feed') !== false) ? true : false;
+    }
+
+    /**
      * Check for GET parameters URL
-     * 
+     *
      * @param string $url
      * @return boolean TRUE if url has ?
      */
@@ -148,7 +180,7 @@ abstract class StaticContentHelperUrl {
      * @return formated string
      */
     static public function stripFormat($url) {
-        $format = '.html';
+        $format = '/index.html';
         $url = str_replace($format, '', $url);
 
         return $url;
@@ -161,7 +193,7 @@ abstract class StaticContentHelperUrl {
      * @return formated string
      */
     static public function addFormat($url) {
-        $format = '.html';
+        $format = '/index.html';
         $url = self::stripFormat($url);
 
         return $url . $format;

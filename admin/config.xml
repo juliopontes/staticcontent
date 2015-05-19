@@ -6,6 +6,15 @@
 			type="text"
 			label="COM_STATICCONTENT_CONFIG_FIELD_DIRECTORY_NAME_LABEL"
 			description="COM_STATICCONTENT_CONFIG_FIELD_DIRECTORY_NAME_DESC"
+            required="true"
+		/>
+		<field
+			name="base_url"
+			type="text"
+			label="COM_STATICCONTENT_CONFIG_FIELD_BASE_URL_LABEL"
+			description="COM_STATICCONTENT_CONFIG_FIELD_BASE_URL_DESC"
+            default="/"
+            required="true"
 		/>
 	</fieldset>
 

@@ -7,102 +7,109 @@ abstract class StaticContentHelperDocument
 	
 	static public function body($page,$pageLinks,$itemLevel)
 	{
-		$baseFolder = ($itemLevel <= 0) ? '' : str_repeat('../',$itemLevel) ;
-		
+		// $baseFolder = ($itemLevel <= 0) ? '' : str_repeat('../',$itemLevel) ;
 		$body = $page->content;
 		$domDocument = new DOMDocument();
 		$domDocument->loadHTML($body);
 		
-		$base = $domDocument->getElementsByTagName('base');		
-		
-		//replace base
-		if (!empty($base)) {
-			foreach ($base as $node) {
-				$href = $node->getAttribute('href');
-				$body = str_replace('<base href="'.$href.'" />','<base href="'.$baseFolder.'index.html" />',$body);
-			}
-		}
-		
+		$base = $domDocument->getElementsByTagName('base');
+
+		$option = JFactory::getApplication()->input->get('option');
+		$comParams = JComponentHelper::getParams($option);
+        $newBaseURL = rtrim($comParams->get('base_url' /* , $baseFolder */), '/') .'/';
+
 		$links = $domDocument->getElementsByTagName('link');
 		$scripts = $domDocument->getElementsByTagName('script');
 		$images = $domDocument->getElementsByTagName('img');
+        $pictures = $domDocument->getElementsByTagName('source');
 	
 		$body = str_replace(JURI::root(),'',$body);
-		
-		$rootURL = JURI::root(true);
-		$baseURL = JURI::base(true);
-		
+
 		foreach ($links as $link) {
-			$linkHref = $link->getAttribute('href');
-			if (!empty($rootURL)) {
-				$cleanLinkHref = str_replace(JURI::root(true).'/', '', $linkHref);
-			} else {
-				$cleanLinkHref = $linkHref;
-			}
-			if (strpos($linkHref,'format=feed') !== false) {
-				$cleanLinkHref = 'feed.xml';
-			}
-			$body = str_replace('href="'.htmlspecialchars($linkHref).'"','href="'.$cleanLinkHref.'"',$body);
+            $url = $link->getAttribute('href');
+            $relativeUrl = StaticContentHelperUrl::getRelativeLink($url);
+            $link->setAttribute('href', $relativeUrl);
+			$body = str_replace('href="'.htmlspecialchars($url).'"','href="'.$relativeUrl.'"',$body);
 			self::copyFile($link, 'href');
 		}
 		foreach ($images as $img) {
-			$imgHref = $img->getAttribute('src');
-			
-			$cleanImgHref = str_replace(str_replace(JURI::base(true),'',JURI::base()), '', $imgHref);
-			if (!empty($baseURL))
-				$cleanImgHref = str_replace(JURI::base(true).'/', '', $cleanImgHref);
-			$cleanImgHref = str_replace(JURI::base(true), '', $cleanImgHref);
-			$img->setAttribute('src',$cleanImgHref);
-			$body = str_replace('src="'.$imgHref.'"','src="'.$cleanImgHref.'"',$body);
-			
+			$url = $img->getAttribute('src');
+            $relativeUrl = StaticContentHelperUrl::getRelativeLink($url);
+			$img->setAttribute('src', $relativeUrl);
+			$body = str_replace('src="'.$url.'"','src="'.$relativeUrl.'"',$body);
 			self::copyFile($img, 'src');
 		}
+        foreach ($pictures as $picture) {
+            $url = $picture->getAttribute('srcset');
+            $relativeUrl = StaticContentHelperUrl::getRelativeLink($url);
+            $picture->setAttribute('srcset', $relativeUrl);
+            $body = str_replace('src="'.$url.'"','src="'.$relativeUrl.'"',$body);
+
+            self::copyFile($picture, 'srcset');
+        }
 		foreach ($scripts as $script) {
-			$scriptHref = $script->getAttribute('src');
-			if (!empty($rootURL)) {
-				$cleanScriptHref = str_replace(JURI::root(true).'/', '', $scriptHref);
-			} else {
-				$cleanScriptHref = $scriptHref;
-			}
-			$body = str_replace('src="'.$scriptHref.'"','src="'.$cleanScriptHref.'"',$body);
+            $url = $script->getAttribute('src');
+            $relativeUrl = StaticContentHelperUrl::getRelativeLink($url);
+            $script->setAttribute('src', $relativeUrl);
+			$body = str_replace('src="'.$url.'"','src="'.$relativeUrl.'"',$body);
 			self::copyFile($script, 'src');
 		}
-		
-		unset($domDocument);
 		
 		if (!empty($pageLinks['print'])) {
 			$body = self::fixPrintLinks($body,$pageLinks['print']);
 		}
 		$body = self::fixMenuLinks($body,$pageLinks);
 		$body = self::fixBannersLinks($body);
-		
+
+        // Need to parse DOM again since the original 'base' could
+        // have been already replaced.
+        $domDocument = new DOMDocument();
+        $domDocument->loadHTML($body);
+        if ($base = $domDocument->getElementsByTagName('base')) {
+            foreach ($base as $node) {
+                $href = $node->getAttribute('href');
+                $body = str_replace('<base href="' . $href . '" />', '<base href="' . $newBaseURL . '" />', $body);
+            }
+        }
+
+        unset($domDocument);
+
 		return $body;
 	}
 	
 	static public function fixMenuLinks($body,$menuItems)
 	{
-		foreach ($menuItems['menu'] as $menuItem)
-		{	
-			$sefLink = $menuItem->file;
-			$originalLink = JURI::root(true).'/'.$menuItem->relative;
-			$body = str_replace('href="'.$originalLink.'"','href="'.$sefLink.'"',$body);
+        $params = JComponentHelper::getParams('com_staticcontent');
+        $allMenuItems = array_merge($menuItems['menu'], $menuItems['pages']);
+
+		foreach ($allMenuItems as $menuItem)
+		{
+			$originalLink = JURI::root(true).'/'.ltrim($menuItem->relative, '/');
+            $updatedLink = $menuItem->relative;
+
+            if ($updatedLink == '/') {
+                $updatedLink = $params->get('base_url');
+            }
+
+			$body = str_replace('href="'.$originalLink.'"','href="'.$updatedLink.'"',$body);
 		}
-		
-		foreach ($menuItems['pages'] as $menuItem)
-		{	
-			$sefLink = $menuItem->file;
-			$originalLink = JURI::root(true).'/'.$menuItem->relative;
-			$body = str_replace('href="'.$originalLink.'"','href="'.$sefLink.'"',$body);
-		}
-		
+
 		return $body;
 	}
 	
 	static public function fixPrintLinks($body,$printLinks)
 	{
+        if (empty($body)) {
+            return $body;
+        }
+
 		foreach ($printLinks as $originaPrintLink => $sefPrintLink) {
-			$originaPrintLink = str_replace(JURI::base(true).'/','', $originaPrintLink);
-			$body = str_replace('href="'.$originaPrintLink.'"','href="'.$sefPrintLink.'"',$body);
+			//remove base
+			$base = JURI::root(true);
+			if ($base && strpos($originaPrintLink, $base . '/') === 0) {
+				$originaPrintLink = substr($originaPrintLink, strlen($base . '/'));
+			}
+			$body = str_replace('href="'.htmlspecialchars($originaPrintLink).'"','href="'.$sefPrintLink.'"',$body);
 		}
 		
 		return $body;
@@ -135,10 +142,9 @@ abstract class StaticContentHelperDocument
 			$uri = JFactory::getURI($url);
 			$interno = false;
 
-			$uriHost = $uri->getHost();
-			if ( (!empty($uriHost) && $uriHost == JURI::getInstance()->getHost()) || strpos($url,JURI::base(true))) $interno = true;
-			
-			if(JURI::isInternal($url) == $interno || strpos($url,'index.php') !== false) return;
+            if (!JURI::isInternal($url)) {
+                return;
+            }
 
 			$path = $uri->getPath();
 
@@ -147,24 +153,13 @@ abstract class StaticContentHelperDocument
 				array_shift($path);
 				array_shift($path);
 				$path = implode($path,'/');
+                $uri->setPath($path);
 			}
-			$uri->setPath($path);
-			$tmp = str_replace('/',DIRECTORY_SEPARATOR,$path);
 
-			$intersect = array_intersect(explode(DIRECTORY_SEPARATOR,JPATH_ROOT), explode(DIRECTORY_SEPARATOR,$tmp));
-			$intersect = array_filter($intersect);
-			$tmpBasePath = implode('/',$intersect);
-			if (!empty($tmpBasePath)) $tmpBasePath .= '/';
-			
-			if (!empty($tmpBasePath)) {
-				$path = str_replace($tmpBasePath,'',$path);
-			}
-			else {
-				$path = $uri->getPath();
-			}
-			
-			if (empty($path) || $path == '<') return;
-			
+			if (empty($path) || $path == '<') {
+                return;
+            }
+
 			$sourceFilePath = JPath::clean(JPATH_ROOT.DIRECTORY_SEPARATOR.$path);
 			$filePath = JPath::clean($path_source.DIRECTORY_SEPARATOR.$path);
 

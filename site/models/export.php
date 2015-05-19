@@ -193,11 +193,15 @@ class StaticContentModelExport extends Model {
                     continue;
                 }
 
-                $relative_link = StaticContentHelperUrl::getRelativeLink($href);
-
                 $pageName = StaticContentHelperUrl::createPageName($full_link);
                 if (StaticContentHelperUrl::isPrintLink($full_link)) {
                     $tmpLinks['print'][$href] = $pageName;
+                }
+
+                if (StaticContentHelperUrl::isFeedLink($full_link)) {
+                    $relative_link = $pageName;
+                } else {
+                    $relative_link = StaticContentHelperUrl::getRelativeLink($href);
                 }
 
                 if (!$this->existsLink($full_link)) {
@@ -211,7 +215,7 @@ class StaticContentModelExport extends Model {
                     $link = new stdClass();
                     $link->file = $pageName;
                     $link->full = $full_link;
-                    $link->relative = $relative_link;
+                    $link->relative = ltrim($relative_link, '/');
                     $link->content = $content;
 
                     array_push($tmpLinks['pages'], $link);
