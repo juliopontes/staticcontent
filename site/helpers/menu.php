@@ -91,7 +91,7 @@ abstract class StaticContentHelperMenu {
         $isInternal = JURI::isInternal($menuItem->flink);
         $canAccess = (is_object($menu)) ? in_array((int) $menu->access, JFactory::getUser(0)->getAuthorisedViewLevels()) : false;
 
-        if (($isInternal && $canAccess) || $menuItem->type = 'url') {
+        if (($isInternal && $canAccess) || $menuItem->type == 'url') 
             return true;
         } else {
             return false;
