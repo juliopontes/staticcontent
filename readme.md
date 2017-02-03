@@ -3,9 +3,4 @@ This extension exports a HTML version of your site according to your preferences
 
 
 ## Intructions
-* Download zip
-* Install on your Joomla!
-* Set your HTML directory
-* Click on "generate html"
-* Enjoy!
-* If you wish download a zip
+* In development
